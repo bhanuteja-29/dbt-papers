@@ -3,8 +3,21 @@ const config = require("../config/env");
 
 const resend = new Resend(config.resend.apiKey);
 
+
+console.log("=== MAIL SERVICE ===");
+console.log("Using Resend:", true);
+console.log("Resend API key exists:", Boolean(config.resend.apiKey));
+console.log("Resend sender:", config.resend.from);
+console.log("====================");
+
 const sendVerificationEmail = async ({ email, token }) => {
   const verificationUrl = `${config.clientUrl}/verify-email/${token}`;
+
+  console.log("Sending reset email...");
+console.log("To:", email);
+console.log("From:", config.resend.from);
+console.log("Client URL:", config.clientUrl);
+console.log("API key exists:", Boolean(config.resend.apiKey));
 
   const { data, error } = await resend.emails.send({
     from: config.resend.from,
@@ -40,9 +53,12 @@ const sendVerificationEmail = async ({ email, token }) => {
   });
 
   if (error) {
-    console.error("Resend verification email error:", error);
-    throw new Error("Failed to send verification email");
-  }
+  console.error("========== RESEND ERROR ==========");
+  console.error(error);
+  console.error("==================================");
+
+  throw new Error(error.message || "Failed to send password reset email");
+}
 
   console.log("Verification email sent:", data?.id);
 };
