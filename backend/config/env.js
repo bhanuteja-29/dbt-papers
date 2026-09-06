@@ -18,10 +18,12 @@ const config = {
         domain.trim().toLowerCase(),
       )
     : [],
-  resend: {
-  apiKey: process.env.RESEND_API_KEY,
-  from: process.env.RESEND_FROM_EMAIL,
-},
+  mailjet: {
+    apiKey: process.env.MAILJET_API_KEY,
+    secretKey: process.env.MAILJET_SECRET_KEY,
+    fromEmail: process.env.MAILJET_FROM_EMAIL,
+    fromName: process.env.MAILJET_FROM_NAME || "dbtPapers",
+  },
   jwt: {
     secret: process.env.JWT_SECRET,
   },

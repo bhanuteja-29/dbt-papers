@@ -1,127 +1,175 @@
-const { Resend } = require("resend");
+const Mailjet = require("node-mailjet");
 const config = require("../config/env");
 
-const resend = new Resend(config.resend.apiKey);
+const mailjet = Mailjet.apiConnect(
+  config.mailjet.apiKey,
+  config.mailjet.secretKey
+);
 
+const sendEmail = async ({ to, subject, html, text }) => {
+  try {
+    const request = await mailjet
+      .post("send", { version: "v3.1" })
+      .request({
+        Messages: [
+          {
+            From: {
+              Email: config.mailjet.fromEmail,
+              Name: config.mailjet.fromName,
+            },
 
-console.log("=== MAIL SERVICE ===");
-console.log("Using Resend:", true);
-console.log("Resend API key exists:", Boolean(config.resend.apiKey));
-console.log("Resend sender:", config.resend.from);
-console.log("====================");
+            To: [
+              {
+                Email: to,
+              },
+            ],
+
+            Subject: subject,
+
+            TextPart: text,
+
+            HTMLPart: html,
+          },
+        ],
+      });
+
+    console.log("Mailjet email sent:", request.body);
+
+    return request.body;
+  } catch (error) {
+    console.error(
+      "Mailjet email error:",
+      error?.response?.body || error?.body || error
+    );
+
+    throw new Error("Failed to send email");
+  }
+};
+
 
 const sendVerificationEmail = async ({ email, token }) => {
-  const verificationUrl = `${config.clientUrl}/verify-email/${token}`;
+  const verificationUrl =
+    `${config.clientUrl}/verify-email/${token}`;
 
-  console.log("Sending reset email...");
-console.log("To:", email);
-console.log("From:", config.resend.from);
-console.log("Client URL:", config.clientUrl);
-console.log("API key exists:", Boolean(config.resend.apiKey));
+  return sendEmail({
+    to: email,
 
-  const { data, error } = await resend.emails.send({
-    from: config.resend.from,
-    to: [email],
     subject: "Verify your dbtPapers account",
+
+    text: `
+Welcome to dbtPapers!
+
+Please verify your account by clicking the link below:
+
+${verificationUrl}
+
+If you did not create this account, you can ignore this email.
+    `,
+
     html: `
-      <h2>Welcome to dbtPapers!</h2>
+      <div style="font-family: Arial, sans-serif; line-height: 1.6;">
+        <h2>Welcome to dbtPapers!</h2>
 
-      <p>Please verify your email address by clicking the button below.</p>
+        <p>
+          Thanks for creating your account.
+          Please verify your email address to continue.
+        </p>
 
-      <p>
-        <a
-          href="${verificationUrl}"
-          style="
-            display:inline-block;
-            padding:12px 20px;
-            background:#2563eb;
-            color:white;
-            text-decoration:none;
-            border-radius:6px;
-          "
-        >
-          Verify Email
-        </a>
-      </p>
+        <p>
+          <a
+            href="${verificationUrl}"
+            style="
+              display:inline-block;
+              padding:12px 20px;
+              background:#2563eb;
+              color:white;
+              text-decoration:none;
+              border-radius:6px;
+            "
+          >
+            Verify Email
+          </a>
+        </p>
 
-      <p>Or copy and paste this link into your browser:</p>
+        <p>
+          Or copy this link into your browser:
+        </p>
 
-      <p>${verificationUrl}</p>
+        <p>${verificationUrl}</p>
 
-      <p>This link will expire in 1 hour.</p>
+        <p>
+          If you did not create this account, you can ignore this email.
+        </p>
+      </div>
     `,
   });
-
-  if (error) {
-  console.error("========== RESEND ERROR ==========");
-  console.error(error);
-  console.error("==================================");
-
-  throw new Error(error.message || "Failed to send password reset email");
-}
-
-  console.log("Verification email sent:", data?.id);
 };
+
 
 const sendPasswordResetEmail = async ({ email, token }) => {
-  const resetUrl = `${config.clientUrl}/reset-password/${token}`;
+  const resetUrl =
+    `${config.clientUrl}/reset-password/${token}`;
 
-  const { data, error } = await resend.emails.send({
-    from: config.resend.from,
-    to: [email],
+  return sendEmail({
+    to: email,
+
     subject: "Reset your dbtPapers password",
+
+    text: `
+You requested a password reset for your dbtPapers account.
+
+Reset your password using this link:
+
+${resetUrl}
+
+This link will expire according to the password reset policy of dbtPapers.
+
+If you did not request this password reset, you can ignore this email.
+    `,
+
     html: `
-      <h2>Reset your dbtPapers password</h2>
+      <div style="font-family: Arial, sans-serif; line-height: 1.6;">
+        <h2>Password Reset</h2>
 
-      <p>
-        We received a request to reset your dbtPapers password.
-      </p>
+        <p>
+          We received a request to reset your dbtPapers password.
+        </p>
 
-      <p>
-        Click the button below to create a new password:
-      </p>
+        <p>
+          Click the button below to reset your password:
+        </p>
 
-      <p>
-        <a
-          href="${resetUrl}"
-          style="
-            display:inline-block;
-            padding:12px 20px;
-            background:#2563eb;
-            color:white;
-            text-decoration:none;
-            border-radius:6px;
-          "
-        >
-          Reset Password
-        </a>
-      </p>
+        <p>
+          <a
+            href="${resetUrl}"
+            style="
+              display:inline-block;
+              padding:12px 20px;
+              background:#2563eb;
+              color:white;
+              text-decoration:none;
+              border-radius:6px;
+            "
+          >
+            Reset Password
+          </a>
+        </p>
 
-      <p>Or copy and paste this link into your browser:</p>
+        <p>
+          Or copy this link into your browser:
+        </p>
 
-      <p>${resetUrl}</p>
+        <p>${resetUrl}</p>
 
-      <p>
-        This link will expire in 1 hour.
-      </p>
-
-      <p>
-        If you did not request a password reset,
-        you can safely ignore this email.
-      </p>
+        <p>
+          If you did not request this password reset,
+          you can safely ignore this email.
+        </p>
+      </div>
     `,
   });
-
-  if (error) {
-  console.error("========== RESEND ERROR ==========");
-  console.error(JSON.stringify(error, null, 2));
-  console.error("==================================");
-
-  throw new Error(error.message || "Failed to send password reset email");
-}
-
-  console.log("Password reset email sent:", data?.id);
 };
+
 
 module.exports = {
   sendVerificationEmail,
