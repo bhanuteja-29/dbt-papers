@@ -37,7 +37,7 @@ const Navbar = () => {
         {/* Logo */}
         <Link
           to="/"
-          className="flex items-center gap-2 shrink-0 text-2xl font-bold text-slate-900"
+          className="flex items-center  shrink-0 text-2xl font-bold text-slate-900"
           onClick={() => setMobileOpen(false)}
         >
           dbt<span className="text-blue-600">Papers</span>
