@@ -173,7 +173,7 @@ const Login = () => {
                 name="password"
                 value={form.password}
                 onChange={handleChange}
-                placeholder="Create a password"
+                placeholder="Enter your password"
                 className={`w-full rounded-xl border py-3 pl-10 pr-12 text-sm outline-none transition focus:ring-4 ${
                   errors.password
                     ? "border-red-300 focus:border-red-500 focus:ring-red-500/10"
