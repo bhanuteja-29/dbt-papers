@@ -1,12 +1,27 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { Mail, Lock, LogIn, Eye, EyeOff } from "lucide-react";
+
+import {
+  Link,
+  useLocation,
+  useNavigate,
+} from "react-router-dom";
+
+import {
+  Mail,
+  Lock,
+  LogIn,
+  Eye,
+  EyeOff,
+} from "lucide-react";
 
 import { useAuth } from "../context/AuthContext";
+
 import api from "../services/api";
 
 const Login = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+
   const { login } = useAuth();
 
   const [form, setForm] = useState({
@@ -43,7 +58,9 @@ const Login = () => {
 
     if (!email) {
       newErrors.email = "Email is required.";
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    } else if (
+      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+    ) {
       newErrors.email = "Please enter a valid email address.";
     }
 
@@ -82,19 +99,36 @@ const Login = () => {
 
       if (!token) {
         throw new Error(
-          "Login succeeded but no authentication token was returned.",
+          "Login succeeded but no authentication token was returned."
         );
       }
 
-      login(token, data.user || data.data?.user || null);
+      login(
+        token,
+        data.user || data.data?.user || null
+      );
 
-      navigate("/");
+      /*
+       * If the user was redirected to login from another page,
+       * return them to that page.
+       *
+       * Example:
+       * /question-papers/123
+       *
+       * If there is no previous page, go to home.
+       */
+      const redirectTo = location.state?.from || "/";
+
+      navigate(redirectTo, {
+        replace: true,
+      });
+
     } catch (error) {
       console.error("LOGIN ERROR:", error);
 
       setServerError(
         error.response?.data?.message ||
-          "Login failed. Please check your credentials.",
+          "Login failed. Please check your credentials."
       );
     } finally {
       setLoading(false);
@@ -104,6 +138,7 @@ const Login = () => {
   return (
     <main className="min-h-[calc(100vh-4rem)] bg-slate-50 px-4 py-10">
       <div className="mx-auto flex max-w-md flex-col justify-center">
+
         {/* Header */}
         <div className="mb-8 text-center">
           <h1 className="mt-5 text-3xl font-bold text-slate-900">
@@ -121,6 +156,7 @@ const Login = () => {
           noValidate
           className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8"
         >
+
           {/* Email */}
           <div>
             <label className="mb-2 block text-sm font-semibold text-slate-700">
@@ -160,8 +196,6 @@ const Login = () => {
               Password
             </label>
 
-          
-
             <div className="relative">
               <Lock
                 size={18}
@@ -169,7 +203,9 @@ const Login = () => {
               />
 
               <input
-                type={showPassword ? "text" : "password"}
+                type={
+                  showPassword ? "text" : "password"
+                }
                 name="password"
                 value={form.password}
                 onChange={handleChange}
@@ -183,11 +219,23 @@ const Login = () => {
 
               <button
                 type="button"
-                onClick={() => setShowPassword((prev) => !prev)}
+                onClick={() =>
+                  setShowPassword(
+                    (prev) => !prev
+                  )
+                }
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 transition hover:text-slate-600"
-                aria-label={showPassword ? "Hide password" : "Show password"}
+                aria-label={
+                  showPassword
+                    ? "Hide password"
+                    : "Show password"
+                }
               >
-                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                {showPassword ? (
+                  <EyeOff size={18} />
+                ) : (
+                  <Eye size={18} />
+                )}
               </button>
             </div>
 
@@ -198,6 +246,7 @@ const Login = () => {
             )}
           </div>
 
+          {/* Forgot password */}
           <div className="mt-2 flex justify-end">
             <Link
               to="/forgot-password"
@@ -221,12 +270,16 @@ const Login = () => {
             className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
           >
             <LogIn size={18} />
-            {loading ? "Signing in..." : "Sign In"}
+
+            {loading
+              ? "Signing in..."
+              : "Sign In"}
           </button>
 
           {/* Signup */}
           <p className="mt-6 text-center text-sm text-slate-500">
             Don't have an account?{" "}
+
             <Link
               to="/signup"
               className="font-semibold text-blue-600 hover:text-blue-700"
@@ -234,6 +287,7 @@ const Login = () => {
               Create an account
             </Link>
           </p>
+
         </form>
       </div>
     </main>

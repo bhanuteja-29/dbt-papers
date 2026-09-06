@@ -3,11 +3,33 @@ import {
   ExternalLink,
   FileText,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const QuestionPaperFiles = ({
   paper,
   onDownload,
 }) => {
+  const navigate = useNavigate();
+
+  const handleDownload = (file) => {
+    // Check if user is logged in
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      // Not logged in → go to login page
+      navigate("/login", {
+        state: {
+          from: `/question-papers/${paper._id}`,
+        },
+      });
+
+      return;
+    }
+
+    // User is logged in → continue with existing download function
+    onDownload(file);
+  };
+
   return (
     <div className="p-6 sm:p-8">
       <div className="mb-5">
@@ -27,6 +49,7 @@ const QuestionPaperFiles = ({
             key={file.filePublicId}
             className="flex flex-col gap-4 rounded-xl border border-slate-200 bg-slate-50 p-4 sm:flex-row sm:items-center sm:justify-between"
           >
+            {/* File information */}
             <div className="flex min-w-0 items-center gap-3">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-white">
                 <FileText
@@ -46,7 +69,9 @@ const QuestionPaperFiles = ({
               </div>
             </div>
 
+            {/* Actions */}
             <div className="flex shrink-0 gap-2">
+              {/* View */}
               <a
                 href={file.fileUrl}
                 target="_blank"
@@ -57,9 +82,10 @@ const QuestionPaperFiles = ({
                 View
               </a>
 
+              {/* Download */}
               <button
                 type="button"
-                onClick={() => onDownload(file)}
+                onClick={() => handleDownload(file)}
                 className="flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-3 py-2 text-sm font-semibold text-white transition hover:bg-blue-700"
               >
                 <Download size={15} />
