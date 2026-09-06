@@ -20,7 +20,8 @@ const upload = multer({
     storage,
     fileFilter,
     limits: {
-        fileSize: 1 * 1024 * 1024, // 1 MB
+        fileSize: 2 * 1024 * 1024, // 1 MB per file
+        files: 5, // Maximum 5 files per question paper
     },
 });
 

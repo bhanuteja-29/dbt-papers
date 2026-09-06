@@ -39,27 +39,47 @@ const questionPaperSchema = new mongoose.Schema(
       required: true,
     },
 
-    fileUrl: {
-      type: String,
+    files: {
+      type: [
+        {
+          fileUrl: {
+            type: String,
+            required: true,
+          },
+
+          filePublicId: {
+            type: String,
+            required: true,
+          },
+
+          fileName: {
+            type: String,
+            required: true,
+            trim: true,
+          },
+
+          fileSize: {
+            type: Number,
+            required: true,
+            min: 0,
+          },
+
+          resourceType: {
+            type: String,
+            enum: ["image", "raw"],
+            required: true,
+          },
+        },
+      ],
+
       required: true,
+
+      validate: {
+        validator: (files) => files.length >= 1,
+        message: "At least one file is required",
+      },
     },
 
-    filePublicId: {
-      type: String,
-      required: true,
-    },
-
-    fileName: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-
-    fileSize: {
-      type: Number,
-      required: true,
-      min: 0,
-    },
     status: {
       type: String,
       enum: ["pending", "approved", "rejected"],
@@ -71,6 +91,21 @@ const questionPaperSchema = new mongoose.Schema(
       enum: ["pending", "processing", "completed", "failed"],
       default: "pending",
     },
+
+    // Added for admin rejection management
+    rejectionReason: {
+      type: String,
+      trim: true,
+      maxlength: 1000,
+      default: null,
+    },
+
+    // Added to track when a paper was rejected
+    rejectedAt: {
+      type: Date,
+      default: null,
+    },
+
     description: {
       type: String,
       trim: true,
@@ -106,11 +141,10 @@ const questionPaperSchema = new mongoose.Schema(
       type: [String],
       default: [],
     },
-    
   },
   {
     timestamps: true,
-  },
+  }
 );
 
 questionPaperSchema.index({
@@ -123,6 +157,12 @@ questionPaperSchema.index({
 questionPaperSchema.index({
   status: 1,
   createdAt: -1,
+});
+
+// Useful for finding papers that need automatic deletion
+questionPaperSchema.index({
+  status: 1,
+  rejectedAt: 1,
 });
 
 module.exports = mongoose.model("QuestionPaper", questionPaperSchema);

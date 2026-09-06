@@ -1,316 +1,518 @@
-const QuestionPaper = require("../models/QuestionPaper");
+// const QuestionPaper = require("../models/QuestionPaper");
 
-const {
-    uploadBufferToCloudinary,
-    deleteFromCloudinary,
-} = require("../services/file-upload.service");
+// const {
+//   uploadBufferToCloudinary,
+//   deleteFromCloudinary,
+// } = require("../services/file-upload.service");
 
-const createQuestionPaper = async (req, res, next) => {
-    let uploadedFile = null;
+// const cloudinary = require("../utils/cloudinary.utils");
 
-    try {
-        const file = req.file;
+// const questionPaperService = require("../services/questionPaper.service");
 
-        if (!file) {
-            return res.status(400).json({
-                success: false,
-                message: "File is required",
-            });
-        }
+// /* =========================================================
+//    CREATE QUESTION PAPER
+// ========================================================= */
 
-        const {
-            title,
-            course,
-            courseCode,
-            academicYear,
-            examType,
-            description,
-            tags,
-        } = req.body;
+// const createQuestionPaper = async (req, res, next) => {
+//   const uploadedFiles = [];
 
-        uploadedFile = await uploadBufferToCloudinary(
-            file.buffer,
-            {
-                folder: "pyq-papers",
-                resource_type:
-                    file.mimetype === "application/pdf"
-                        ? "raw"
-                        : "image",
-            }
-        );
+//   try {
+//     const files = req.files;
 
-        const questionPaper = await QuestionPaper.create({
-            title,
-            course,
-            courseCode,
-            academicYear,
-            examType,
+//     if (!files || files.length === 0) {
+//       return res.status(400).json({
+//         success: false,
+//         message: "At least one file is required",
+//       });
+//     }
 
-            uploadedBy: req.user.sub,
+//     const pdfFiles = files.filter(
+//       (file) => file.mimetype === "application/pdf"
+//     );
 
-            fileUrl: uploadedFile.secure_url,
-            filePublicId: uploadedFile.public_id,
-            fileName: file.originalname,
-            fileSize: file.size,
+//     const imageFiles = files.filter(
+//       (file) =>
+//         file.mimetype === "image/jpeg" ||
+//         file.mimetype === "image/png"
+//     );
 
-            description,
-            tags,
+//     // Only one PDF is allowed
+//     if (pdfFiles.length > 1) {
+//       return res.status(400).json({
+//         success: false,
+//         message: "Only one PDF can be uploaded for a question paper.",
+//       });
+//     }
 
-            status: "pending",
-            processingStatus: "pending",
-        });
+//     // PDF cannot be combined with images
+//     if (pdfFiles.length === 1 && imageFiles.length > 0) {
+//       return res.status(400).json({
+//         success: false,
+//         message: "You cannot mix a PDF with images.",
+//       });
+//     }
 
-        return res.status(201).json({
-            success: true,
-            message: "Question paper uploaded successfully",
-            questionPaper,
-        });
-    } catch (error) {
-        if (uploadedFile?.public_id) {
-            try {
-                await deleteFromCloudinary(
-                    uploadedFile.public_id,
-                    uploadedFile.resource_type
-                );
-            } catch (cleanupError) {
-                console.error(
-                    "Failed to cleanup Cloudinary file:",
-                    cleanupError
-                );
-            }
-        }
+//     const {
+//       title,
+//       course,
+//       courseCode,
+//       academicYear,
+//       examType,
+//       description,
+//       tags,
+//     } = req.body;
 
-        next(error);
-    }
-};
+//     for (const file of files) {
+//       const uploadOptions = {
+//         folder: "pyq-papers",
+//         resource_type:
+//           file.mimetype === "application/pdf" ? "raw" : "image",
+//       };
 
-const getPendingQuestionPapers = async (req, res, next) => {
-    try {
-        const questionPapers = await QuestionPaper.find({
-            status: "pending",
-        })
-            .populate("uploadedBy", "name email")
-            .sort({ createdAt: -1 });
+//       if (file.mimetype === "application/pdf") {
+//         uploadOptions.public_id = `${courseCode}.pdf`;
+//       }
 
-        return res.status(200).json({
-            success: true,
-            count: questionPapers.length,
-            questionPapers,
-        });
-    } catch (error) {
-        next(error);
-    }
-};
+//       const uploadedFile = await uploadBufferToCloudinary(
+//         file.buffer,
+//         uploadOptions
+//       );
 
-const approveQuestionPaper = async (req, res, next) => {
-    try {
-        const { id } = req.params;
+//       uploadedFiles.push({
+//         fileUrl: uploadedFile.secure_url,
+//         filePublicId: uploadedFile.public_id,
+//         fileName: file.originalname,
+//         fileSize: file.size,
+//         resourceType: uploadedFile.resource_type,
+//       });
+//     }
 
-        const questionPaper = await QuestionPaper.findById(id);
+//     const questionPaper = await QuestionPaper.create({
+//       title,
+//       course,
+//       courseCode,
+//       academicYear,
+//       examType,
 
-        if (!questionPaper) {
-            return res.status(404).json({
-                success: false,
-                message: "Question paper not found",
-            });
-        }
+//       uploadedBy: req.user.sub,
 
-        if (questionPaper.status !== "pending") {
-            return res.status(400).json({
-                success: false,
-                message: "Question paper has already been reviewed",
-            });
-        }
+//       files: uploadedFiles,
 
-        questionPaper.status = "approved";
+//       description,
+//       tags,
 
-        await questionPaper.save();
+//       status: "pending",
+//       processingStatus: "pending",
 
-        return res.status(200).json({
-            success: true,
-            message: "Question paper approved successfully",
-            questionPaper,
-        });
-    } catch (error) {
-        next(error);
-    }
-};
+//       rejectionReason: null,
+//       rejectedAt: null,
+//     });
 
-const rejectQuestionPaper = async (req, res, next) => {
-    try {
-        const { id } = req.params;
+//     console.log("UPLOADED FILES:", uploadedFiles);
 
-        const questionPaper = await QuestionPaper.findById(id);
+//     return res.status(201).json({
+//       success: true,
+//       message: "Question paper uploaded successfully",
+//       questionPaper,
+//     });
+//   } catch (error) {
+//     // Cleanup Cloudinary files if MongoDB creation fails
+//     for (const file of uploadedFiles) {
+//       try {
+//         await deleteFromCloudinary(
+//           file.filePublicId,
+//           file.resourceType
+//         );
+//       } catch (cleanupError) {
+//         console.error(
+//           "Failed to cleanup Cloudinary file:",
+//           cleanupError
+//         );
+//       }
+//     }
 
-        if (!questionPaper) {
-            return res.status(404).json({
-                success: false,
-                message: "Question paper not found",
-            });
-        }
-
-        if (questionPaper.status !== "pending") {
-            return res.status(400).json({
-                success: false,
-                message: "Question paper has already been reviewed",
-            });
-        }
-
-        questionPaper.status = "rejected";
-
-        await questionPaper.save();
-
-        return res.status(200).json({
-            success: true,
-            message: "Question paper rejected successfully",
-            questionPaper,
-        });
-    } catch (error) {
-        next(error);
-    }
-};
-
-const getQuestionPapers = async (req, res, next) => {
-    try {
-        const page = Math.max(Number(req.query.page) || 1, 1);
-
-        const limit = Math.min(
-            Math.max(Number(req.query.limit) || 10, 1),
-            50
-        );
-
-        const skip = (page - 1) * limit;
-
-        const { search, course, courseCode, academicYear, examType } =
-            req.query;
-
-        const filter = {
-            status: "approved",
-        };
-
-        if (course) {
-            filter.course = course;
-        }
-
-        if (courseCode) {
-            filter.courseCode = courseCode;
-        }
-
-        if (academicYear) {
-            filter.academicYear = academicYear;
-        }
-
-        if (examType) {
-            filter.examType = examType;
-        }
-
-        if (search) {
-            filter.$or = [
-                { title: { $regex: search, $options: "i" } },
-                { course: { $regex: search, $options: "i" } },
-                { courseCode: { $regex: search, $options: "i" } },
-            ];
-        }
-
-        const [questionPapers, total] = await Promise.all([
-            QuestionPaper.find(filter)
-                .populate("uploadedBy", "name")
-                .sort({ createdAt: -1 })
-                .skip(skip)
-                .limit(limit),
-
-            QuestionPaper.countDocuments(filter),
-        ]);
-
-        return res.status(200).json({
-            success: true,
-            questionPapers,
-            pagination: {
-                page,
-                limit,
-                total,
-                totalPages: Math.ceil(total / limit),
-            },
-        });
-    } catch (error) {
-        next(error);
-    }
-};
+//     next(error);
+//   }
+// };
 
 
-const getQuestionPaperById = async (req, res, next) => {
-    try {
-        const { id } = req.params;
+// /* =========================================================
+//    GET APPROVED QUESTION PAPERS
+//    PUBLIC REPOSITORY
+// ========================================================= */
 
-        const questionPaper = await QuestionPaper.findOneAndUpdate(
-            {
-                _id: id,
-                status: "approved",
-            },
-            {
-                $inc: { views: 1 },
-            },
-            {
-                new: true,
-            }
-        ).populate("uploadedBy", "name");
+// const getQuestionPapers = async (req, res, next) => {
+//   try {
+//     const page = Math.max(Number(req.query.page) || 1, 1);
 
-        if (!questionPaper) {
-            return res.status(404).json({
-                success: false,
-                message: "Question paper not found",
-            });
-        }
+//     const limit = Math.min(
+//       Math.max(Number(req.query.limit) || 10, 1),
+//       50
+//     );
 
-        return res.status(200).json({
-            success: true,
-            questionPaper,
-        });
-    } catch (error) {
-        next(error);
-    }
-};
+//     const skip = (page - 1) * limit;
 
-const downloadQuestionPaper = async (req, res, next) => {
-    try {
-        const { id } = req.params;
+//     const {
+//       search,
+//       course,
+//       courseCode,
+//       academicYear,
+//       examType,
+//       sort = "newest",
+//     } = req.query;
 
-        const questionPaper = await QuestionPaper.findOneAndUpdate(
-            {
-                _id: id,
-                status: "approved",
-            },
-            {
-                $inc: { downloads: 1 },
-            },
-            {
-                new: true,
-            }
-        );
+//     const filter = {
+//       status: "approved",
+//     };
 
-        if (!questionPaper) {
-            return res.status(404).json({
-                success: false,
-                message: "Question paper not found",
-            });
-        }
+//     // Exact filters, case-insensitive
+//     if (course) {
+//       filter.course = {
+//         $regex: `^${course.trim()}$`,
+//         $options: "i",
+//       };
+//     }
 
-        return res.status(200).json({
-            success: true,
-            message: "Download link generated successfully",
-            downloadUrl: questionPaper.fileUrl,
-        });
-    } catch (error) {
-        next(error);
-    }
-};
+//     if (courseCode) {
+//       filter.courseCode = {
+//         $regex: `^${courseCode.trim()}$`,
+//         $options: "i",
+//       };
+//     }
 
-module.exports = {
-    createQuestionPaper,
-    getPendingQuestionPapers,
-    approveQuestionPaper,
-    rejectQuestionPaper,
-    getQuestionPapers,
-    getQuestionPaperById,
-    downloadQuestionPaper
-};
+//     if (academicYear) {
+//       filter.academicYear = {
+//         $regex: `^${academicYear.trim()}$`,
+//         $options: "i",
+//       };
+//     }
+
+//     if (examType) {
+//       filter.examType = {
+//         $regex: `^${examType.trim()}$`,
+//         $options: "i",
+//       };
+//     }
+
+//     // Search
+//     if (search && search.trim()) {
+//       const searchRegex = {
+//         $regex: search.trim(),
+//         $options: "i",
+//       };
+
+//       filter.$or = [
+//         { title: searchRegex },
+//         { course: searchRegex },
+//         { courseCode: searchRegex },
+//       ];
+//     }
+
+//     const sortOptions = {
+//       newest: { createdAt: -1 },
+//       oldest: { createdAt: 1 },
+//       mostViewed: { views: -1 },
+//       mostDownloaded: { downloads: -1 },
+//       highestRated: { averageRating: -1 },
+//     };
+
+//     const sortQuery =
+//       sortOptions[sort] || sortOptions.newest;
+
+//     const [questionPapers, total] = await Promise.all([
+//       QuestionPaper.find(filter)
+//         .populate("uploadedBy", "name")
+//         .sort(sortQuery)
+//         .skip(skip)
+//         .limit(limit)
+//         .lean(),
+
+//       QuestionPaper.countDocuments(filter),
+//     ]);
+
+//     return res.status(200).json({
+//       success: true,
+//       questionPapers,
+
+//       pagination: {
+//         page,
+//         limit,
+//         total,
+//         totalPages: Math.ceil(total / limit),
+//         hasNextPage:
+//           page < Math.ceil(total / limit),
+//         hasPreviousPage: page > 1,
+//       },
+//     });
+//   } catch (error) {
+//     next(error);
+//   }
+// };
+
+
+// /* =========================================================
+//    GET QUESTION PAPER BY ID
+// ========================================================= */
+
+// const getQuestionPaperById = async (req, res, next) => {
+//   try {
+//     const { id } = req.params;
+
+//     const questionPaper =
+//       await QuestionPaper.findOneAndUpdate(
+//         {
+//           _id: id,
+//           status: "approved",
+//         },
+//         {
+//           $inc: { views: 1 },
+//         },
+//         {
+//           new: true,
+//         }
+//       ).populate("uploadedBy", "name");
+
+//     if (!questionPaper) {
+//       return res.status(404).json({
+//         success: false,
+//         message: "Question paper not found",
+//       });
+//     }
+
+//     return res.status(200).json({
+//       success: true,
+//       questionPaper,
+//     });
+//   } catch (error) {
+//     next(error);
+//   }
+// };
+
+
+// /* =========================================================
+//    DOWNLOAD QUESTION PAPER
+// ========================================================= */
+
+// const downloadQuestionPaper = async (req, res, next) => {
+//   try {
+//     const { id } = req.params;
+
+//     const questionPaper =
+//       await QuestionPaper.findOne({
+//         _id: id,
+//         status: "approved",
+//       });
+
+//     if (!questionPaper) {
+//       return res.status(404).json({
+//         success: false,
+//         message: "Question paper not found",
+//       });
+//     }
+
+//     const files = questionPaper.files.map((file) => {
+//       const downloadUrl = cloudinary.url(
+//         file.filePublicId,
+//         {
+//           resource_type: file.resourceType,
+//           type: "upload",
+//           flags: "attachment",
+//         }
+//       );
+
+//       return {
+//         ...file.toObject(),
+//         fileUrl: downloadUrl,
+//       };
+//     });
+
+//     return res.status(200).json({
+//       success: true,
+//       message: "Download links generated successfully",
+//       files,
+//       downloads: questionPaper.downloads,
+//     });
+//   } catch (error) {
+//     next(error);
+//   }
+// };
+
+
+// /* =========================================================
+//    GET MY UPLOADS
+// ========================================================= */
+
+// const getMyUploads = async (req, res, next) => {
+//   try {
+//     const page = Math.max(
+//       Number(req.query.page) || 1,
+//       1
+//     );
+
+//     const limit = Math.min(
+//       Math.max(Number(req.query.limit) || 10, 1),
+//       50
+//     );
+
+//     const skip = (page - 1) * limit;
+
+//     const userFilter = {
+//       uploadedBy: req.user.sub,
+//     };
+
+//     const [
+//       questionPapers,
+//       total,
+//       pending,
+//       approved,
+//       rejected,
+//     ] = await Promise.all([
+//       QuestionPaper.find(userFilter)
+//         .sort({ createdAt: -1 })
+//         .skip(skip)
+//         .limit(limit)
+//         .lean(),
+
+//       QuestionPaper.countDocuments(userFilter),
+
+//       QuestionPaper.countDocuments({
+//         ...userFilter,
+//         status: "pending",
+//       }),
+
+//       QuestionPaper.countDocuments({
+//         ...userFilter,
+//         status: "approved",
+//       }),
+
+//       QuestionPaper.countDocuments({
+//         ...userFilter,
+//         status: "rejected",
+//       }),
+//     ]);
+
+//     return res.status(200).json({
+//       success: true,
+//       questionPapers,
+
+//       stats: {
+//         total,
+//         pending,
+//         approved,
+//         rejected,
+//       },
+
+//       pagination: {
+//         page,
+//         limit,
+//         total,
+//         totalPages: Math.ceil(total / limit),
+//       },
+//     });
+//   } catch (error) {
+//     next(error);
+//   }
+// };
+
+
+// /* =========================================================
+//    ADMIN STATS
+// ========================================================= */
+
+// const getQuestionPaperStats = async (req, res, next) => {
+//   try {
+//     const [
+//       total,
+//       pending,
+//       approved,
+//       rejected,
+//     ] = await Promise.all([
+//       QuestionPaper.countDocuments(),
+
+//       QuestionPaper.countDocuments({
+//         status: "pending",
+//       }),
+
+//       QuestionPaper.countDocuments({
+//         status: "approved",
+//       }),
+
+//       QuestionPaper.countDocuments({
+//         status: "rejected",
+//       }),
+//     ]);
+
+//     return res.status(200).json({
+//       success: true,
+//       stats: {
+//         total,
+//         pending,
+//         approved,
+//         rejected,
+//       },
+//     });
+//   } catch (error) {
+//     next(error);
+//   }
+// };
+
+
+// /* =========================================================
+//    PUBLIC FILTERS
+// ========================================================= */
+
+// const getQuestionPaperFilters = async (
+//   req,
+//   res,
+//   next
+// ) => {
+//   try {
+//     const [
+//       courses,
+//       courseCodes,
+//       academicYears,
+//       examTypes,
+//     ] = await Promise.all([
+//       QuestionPaper.distinct("course", {
+//         status: "approved",
+//       }),
+
+//       QuestionPaper.distinct("courseCode", {
+//         status: "approved",
+//       }),
+
+//       QuestionPaper.distinct("academicYear", {
+//         status: "approved",
+//       }),
+
+//       QuestionPaper.distinct("examType", {
+//         status: "approved",
+//       }),
+//     ]);
+
+//     return res.status(200).json({
+//       success: true,
+
+//       filters: {
+//         courses: courses.sort(),
+//         courseCodes: courseCodes.sort(),
+//         academicYears:
+//           academicYears.sort().reverse(),
+//         examTypes: examTypes.sort(),
+//       },
+//     });
+//   } catch (error) {
+//     next(error);
+//   }
+// };
+
+
+// module.exports = {
+//   createQuestionPaper,
+//   getQuestionPapers,
+//   getQuestionPaperById,
+//   downloadQuestionPaper,
+//   getMyUploads,
+//   getQuestionPaperStats,
+//   getQuestionPaperFilters,
+// };
