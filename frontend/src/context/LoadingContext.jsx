@@ -12,23 +12,16 @@ import {
 const LoadingContext = createContext(null);
 
 export const LoadingProvider = ({ children }) => {
-  const [loadingCount, setLoadingCount] =
-    useState(0);
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState("Please wait...");
 
-  const [message, setMessage] =
-    useState("Please wait...");
-
-  const startLoading = (
-    loadingMessage = "Please wait..."
-  ) => {
-    setLoadingCount((count) => count + 1);
+  const startLoading = (loadingMessage = "Please wait...") => {
+    setLoading(true);
     setMessage(loadingMessage);
   };
 
   const stopLoading = () => {
-    setLoadingCount((count) =>
-      Math.max(count - 1, 0)
-    );
+    setLoading(false);
   };
 
   useEffect(() => {
@@ -45,7 +38,7 @@ export const LoadingProvider = ({ children }) => {
   return (
     <LoadingContext.Provider
       value={{
-        loading: loadingCount > 0,
+        loading,
         message,
         startLoading,
         stopLoading,

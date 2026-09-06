@@ -8,7 +8,7 @@ export const registerLoadingController = (start, stop) => {
   stopLoadingCallback = stop;
 };
 
-export const startGlobalLoading = (message) => {
+export const startGlobalLoading = (message = "Please wait...") => {
   activeRequests += 1;
 
   if (activeRequests === 1 && startLoadingCallback) {

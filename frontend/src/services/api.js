@@ -1,11 +1,14 @@
 import axios from "axios";
+
 import {
   startGlobalLoading,
   stopGlobalLoading,
 } from "./loadingController";
 
 const api = axios.create({
-  baseURL:  import.meta.env.VITE_API_URL || "http://localhost:5000/api",
+  baseURL:
+    import.meta.env.VITE_API_URL ||
+    "http://localhost:5000/api",
 });
 
 api.interceptors.request.use((config) => {
@@ -23,7 +26,7 @@ api.interceptors.request.use((config) => {
     startGlobalLoading(
       config.loadingMessage || "Please wait..."
     );
-  }, 600);
+  }, 1500);
 
   return config;
 });
@@ -32,7 +35,9 @@ api.interceptors.response.use(
   (response) => {
     const config = response.config;
 
-    clearTimeout(config.loadingTimer);
+    if (config.loadingTimer) {
+      clearTimeout(config.loadingTimer);
+    }
 
     if (config.loadingShown) {
       stopGlobalLoading();
