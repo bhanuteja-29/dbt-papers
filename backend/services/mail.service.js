@@ -113,9 +113,12 @@ const sendPasswordResetEmail = async ({ email, token }) => {
   });
 
   if (error) {
-    console.error("Resend password reset email error:", error);
-    throw new Error("Failed to send password reset email");
-  }
+  console.error("========== RESEND ERROR ==========");
+  console.error(JSON.stringify(error, null, 2));
+  console.error("==================================");
+
+  throw new Error(error.message || "Failed to send password reset email");
+}
 
   console.log("Password reset email sent:", data?.id);
 };
