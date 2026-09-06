@@ -1,64 +1,108 @@
-const nodemailer = require("nodemailer");
+const { Resend } = require("resend");
 const config = require("../config/env");
 
-const transporter = nodemailer.createTransport({
-  host: config.mail.host,
-  port: config.mail.port,
-  secure: false,
-  auth: {
-    user: config.mail.user,
-    pass: config.mail.password,
-  },
-});
-
-
-// =====================================================
-// EMAIL VERIFICATION
-// =====================================================
+const resend = new Resend(config.resend.apiKey);
 
 const sendVerificationEmail = async ({ email, token }) => {
-  const verificationUrl =
-    `${config.clientUrl}/verify-email/${token}`;
+  const verificationUrl = `${config.clientUrl}/verify-email/${token}`;
 
-  await transporter.sendMail({
-    from: config.mail.from,
-    to: email,
+  const { data, error } = await resend.emails.send({
+    from: config.resend.from,
+    to: [email],
     subject: "Verify your dbtPapers account",
+    html: `
+      <h2>Welcome to dbtPapers!</h2>
 
-    text: `Please verify your email by clicking this link:
+      <p>Please verify your email address by clicking the button below.</p>
 
-${verificationUrl}
+      <p>
+        <a
+          href="${verificationUrl}"
+          style="
+            display:inline-block;
+            padding:12px 20px;
+            background:#2563eb;
+            color:white;
+            text-decoration:none;
+            border-radius:6px;
+          "
+        >
+          Verify Email
+        </a>
+      </p>
 
-This link will expire in 1 hour.`,
+      <p>Or copy and paste this link into your browser:</p>
+
+      <p>${verificationUrl}</p>
+
+      <p>This link will expire in 1 hour.</p>
+    `,
   });
+
+  if (error) {
+    console.error("Resend verification email error:", error);
+    throw new Error("Failed to send verification email");
+  }
+
+  console.log("Verification email sent:", data?.id);
 };
-
-
-// =====================================================
-// PASSWORD RESET
-// =====================================================
 
 const sendPasswordResetEmail = async ({ email, token }) => {
-  const resetUrl =
-    `${config.clientUrl}/reset-password/${token}`;
+  const resetUrl = `${config.clientUrl}/reset-password/${token}`;
 
-  await transporter.sendMail({
-    from: config.mail.from,
-    to: email,
+  const { data, error } = await resend.emails.send({
+    from: config.resend.from,
+    to: [email],
     subject: "Reset your dbtPapers password",
+    html: `
+      <h2>Reset your dbtPapers password</h2>
 
-    text: `We received a request to reset your dbtPapers password.
+      <p>
+        We received a request to reset your dbtPapers password.
+      </p>
 
-Click the link below to create a new password:
+      <p>
+        Click the button below to create a new password:
+      </p>
 
-${resetUrl}
+      <p>
+        <a
+          href="${resetUrl}"
+          style="
+            display:inline-block;
+            padding:12px 20px;
+            background:#2563eb;
+            color:white;
+            text-decoration:none;
+            border-radius:6px;
+          "
+        >
+          Reset Password
+        </a>
+      </p>
 
-This link will expire in 1 hour.
+      <p>Or copy and paste this link into your browser:</p>
 
-If you did not request a password reset, you can safely ignore this email.`,
+      <p>${resetUrl}</p>
+
+      <p>
+        This link will expire in 1 hour.
+      </p>
+
+      <p>
+        If you did not request a password reset,
+        you can safely ignore this email.
+      </p>
+    `,
   });
-};
 
+  if (error) {
+    console.error("Resend password reset email error:", error);
+    throw new Error("Failed to send password reset email");
+  }
+
+  console.log("Password reset email sent:", data?.id);
+};
 
 module.exports = {
   sendVerificationEmail,

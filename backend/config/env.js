@@ -18,13 +18,10 @@ const config = {
         domain.trim().toLowerCase(),
       )
     : [],
-  mail: {
-    host: process.env.MAIL_HOST,
-    port: Number(process.env.MAIL_PORT),
-    user: process.env.MAIL_USER,
-    password: process.env.MAIL_PASSWORD,
-    from: process.env.MAIL_FROM,
-  },
+  resend: {
+  apiKey: process.env.RESEND_API_KEY,
+  from: process.env.RESEND_FROM_EMAIL,
+},
   jwt: {
     secret: process.env.JWT_SECRET,
   },
