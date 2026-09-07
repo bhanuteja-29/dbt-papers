@@ -27,37 +27,30 @@ const FilterPanel = ({
 }) => {
   return (
     <div className="space-y-5">
-
       {/* ==================================================
           FILTER FIELDS
       ================================================== */}
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
-
-        {/* Course */}
-
         <CourseAutocomplete
           value={courseInput}
-          setValue={setCourseInput}
+          onChange={setCourseInput}
           selectedValue={selectedCourse}
-          setSelectedValue={setSelectedCourse}
+          onSelect={setSelectedCourse}
           options={filterOptions.courses}
         />
 
-        {/* Course Code */}
-
         <CourseCodeAutocomplete
           value={courseCodeInput}
-          setValue={setCourseCodeInput}
+          onChange={setCourseCodeInput}
           selectedValue={selectedCourseCode}
-          setSelectedValue={setSelectedCourseCode}
+          onSelect={setSelectedCourseCode}
           options={filterOptions.courseCodes}
         />
 
         {/* Academic Year */}
 
         <div>
-
           <label
             htmlFor="academicYear"
             className="mb-2 block text-sm font-semibold text-slate-800"
@@ -68,33 +61,22 @@ const FilterPanel = ({
           <select
             id="academicYear"
             value={academicYear}
-            onChange={(e) =>
-              setAcademicYear(e.target.value)
-            }
+            onChange={(e) => setAcademicYear(e.target.value)}
             className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10"
           >
-
-            <option value="">
-              All Years
-            </option>
+            <option value="">All Years</option>
 
             {filterOptions.academicYears.map((year) => (
-              <option
-                key={year}
-                value={year}
-              >
+              <option key={year} value={year}>
                 {year}
               </option>
             ))}
-
           </select>
-
         </div>
 
         {/* Exam Type */}
 
         <div>
-
           <label
             htmlFor="examType"
             className="mb-2 block text-sm font-semibold text-slate-800"
@@ -105,29 +87,18 @@ const FilterPanel = ({
           <select
             id="examType"
             value={examType}
-            onChange={(e) =>
-              setExamType(e.target.value)
-            }
+            onChange={(e) => setExamType(e.target.value)}
             className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10"
           >
-
-            <option value="">
-              All Exams
-            </option>
+            <option value="">All Exams</option>
 
             {filterOptions.examTypes.map((exam) => (
-              <option
-                key={exam}
-                value={exam}
-              >
+              <option key={exam} value={exam}>
                 {exam}
               </option>
             ))}
-
           </select>
-
         </div>
-
       </div>
 
       {/* ==================================================
@@ -135,7 +106,6 @@ const FilterPanel = ({
       ================================================== */}
 
       <div className="flex flex-wrap items-center gap-3 border-t border-slate-100 pt-5">
-
         <button
           type="button"
           onClick={onApply}
@@ -151,9 +121,7 @@ const FilterPanel = ({
         >
           Clear
         </button>
-
       </div>
-
     </div>
   );
 };
