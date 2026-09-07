@@ -11,11 +11,18 @@ const downloadQuestionPaper = async (req, res, next) => {
   try {
     const { id } = req.params;
 
-    const questionPaper =
-      await QuestionPaper.findOne({
+    const questionPaper = await QuestionPaper.findOneAndUpdate(
+      {
         _id: id,
         status: "approved",
-      });
+      },
+      {
+        $inc: { downloads: 1 },
+      },
+      {
+        new: true,
+      }
+    );
 
     if (!questionPaper) {
       return res.status(404).json({

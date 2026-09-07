@@ -13,10 +13,18 @@ const api = axios.create({
 
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem("token");
+  let visitorId = localStorage.getItem("visitorId");
+
+  if (!visitorId) {
+    visitorId = crypto.randomUUID();
+    localStorage.setItem("visitorId", visitorId);
+  }
 
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
+
+  config.headers["X-Visitor-Id"] = visitorId;
 
   config.loadingShown = false;
 

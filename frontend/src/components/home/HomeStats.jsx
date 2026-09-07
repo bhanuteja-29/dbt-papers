@@ -14,12 +14,12 @@ const HomeStats = () => {
     },
     {
       label: "Students",
-      value: "500+",
+      value: "200+",
       icon: Users,
     },
     {
       label: "Downloads",
-      value: "1K+",
+      value: "500+",
       icon: Download,
     },
   ];

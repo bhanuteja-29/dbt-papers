@@ -3,6 +3,7 @@ const express = require("express");
 const router = express.Router();
 
 const authenticate = require("../middleware/auth.middleware");
+const optionalAuthenticate = require("../middleware/optionalAuth.middleware");
 const authorize = require("../middleware/authorize.middleware");
 const upload = require("../middleware/upload.middleware");
 const questionPaperStatusController = require("../controllers/questionPaperStatus.controller");
@@ -92,6 +93,7 @@ router.get(
 // View individual approved question paper
 router.get(
   "/:id",
+  optionalAuthenticate,
   getQuestionPaperById
 );
 

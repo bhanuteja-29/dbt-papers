@@ -16,7 +16,6 @@ const RepositoryResults = ({
   error,
   refetch,
 
-  page,
   handlePageChange,
 
   hasActiveFilters,
@@ -218,9 +217,8 @@ const RepositoryResults = ({
           <div className="mt-10">
 
             <Pagination
-              page={page}
               pagination={pagination}
-              setPage={handlePageChange}
+              onPageChange={handlePageChange}
             />
 
           </div>

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import api from "../services/api";
 
 const useQuestionPapers = ({ filters, page, limit,sort }) => {
@@ -14,6 +14,7 @@ const useQuestionPapers = ({ filters, page, limit,sort }) => {
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
     const fetchQuestionPapers = async () => {
@@ -66,13 +67,14 @@ const useQuestionPapers = ({ filters, page, limit,sort }) => {
     };
 
     fetchQuestionPapers();
-  }, [filters, page, limit,sort]);
+  }, [filters, page, limit, sort, reloadKey]);
 
   return {
     questionPapers,
     pagination,
     loading,
     error,
+    refetch: useCallback(() => setReloadKey((current) => current + 1), []),
   };
 };
 
