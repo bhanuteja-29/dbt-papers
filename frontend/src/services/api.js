@@ -26,15 +26,17 @@ api.interceptors.request.use((config) => {
 
   config.headers["X-Visitor-Id"] = visitorId;
 
-  config.loadingShown = false;
+  if (!config.skipGlobalLoading) {
+    config.loadingShown = false;
 
-  config.loadingTimer = setTimeout(() => {
-    config.loadingShown = true;
+    config.loadingTimer = setTimeout(() => {
+      config.loadingShown = true;
 
-    startGlobalLoading(
-      config.loadingMessage || "Please wait..."
-    );
-  }, 1500);
+      startGlobalLoading(
+        config.loadingMessage || "Please wait..."
+      );
+    }, 1500);
+  }
 
   return config;
 });

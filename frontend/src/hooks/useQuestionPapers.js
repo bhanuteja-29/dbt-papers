@@ -50,6 +50,7 @@ const useQuestionPapers = ({ filters, page, limit,sort }) => {
 
         const response = await api.get("/question-papers", {
           params,
+          skipGlobalLoading: true,
         });
 
         setQuestionPapers(response.data.questionPapers);

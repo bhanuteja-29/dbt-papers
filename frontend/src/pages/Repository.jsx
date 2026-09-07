@@ -118,7 +118,8 @@ const Repository = () => {
       try {
 
         const response = await api.get(
-          "/question-papers/filters"
+          "/question-papers/filters",
+          { skipGlobalLoading: true }
         );
 
         setFilterOptions(

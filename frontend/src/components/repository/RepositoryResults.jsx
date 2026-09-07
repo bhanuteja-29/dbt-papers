@@ -46,11 +46,11 @@ const RepositoryResults = ({
 
           <p className="mt-1 text-sm text-slate-500">
 
-            {pagination.total} paper
-            {pagination.total !== 1
-              ? "s"
-              : ""}{" "}
-            found
+            {loading
+              ? "Loading papers..."
+              : `${pagination.total} paper${
+                  pagination.total !== 1 ? "s" : ""
+                } found`}
 
           </p>
 
@@ -88,12 +88,12 @@ const RepositoryResults = ({
 
         <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
 
-          {[1, 2, 3, 4, 5, 6].map(
+          {Array.from({ length: 12 }, (_, index) => index + 1).map(
             (item) => (
 
               <div
                 key={item}
-                className="h-64 animate-pulse rounded-2xl border border-slate-200 bg-white"
+                className="h-[280px] animate-pulse rounded-2xl border border-slate-200 bg-white"
               />
 
             )
