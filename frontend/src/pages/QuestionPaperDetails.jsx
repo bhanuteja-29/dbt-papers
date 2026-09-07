@@ -271,7 +271,7 @@ const QuestionPaperDetails = () => {
 
             <button
               type="button"
-              onClick={() => navigate("/")}
+              onClick={() => navigate("/repository")}
               className="mt-5 rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700"
             >
               Back to Repository

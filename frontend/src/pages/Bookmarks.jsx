@@ -73,7 +73,7 @@ const Bookmarks = () => {
         {/* Back */}
         <button
           type="button"
-          onClick={() => navigate("/")}
+          onClick={() => navigate("/repository")}
           className="mb-6 flex items-center gap-2 text-sm font-medium text-slate-500 transition hover:text-blue-600"
         >
           <ArrowLeft size={18} />

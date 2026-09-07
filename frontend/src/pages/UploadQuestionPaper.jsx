@@ -152,7 +152,7 @@ const UploadQuestionPaper = () => {
     <div className="min-h-screen bg-slate-50">
       <main className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
         <UploadHeader
-          onBack={() => navigate("/")}
+          onBack={() => navigate("/repository")}
         />
 
         <form
