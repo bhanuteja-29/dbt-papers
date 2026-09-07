@@ -11,7 +11,7 @@ const CourseAutocomplete = ({
   const containerRef = useRef(null);
 
   const filteredOptions = options.filter((course) =>
-    course.toLowerCase().includes(value.toLowerCase())
+    course.toLowerCase().includes(value.toLowerCase()),
   );
 
   useEffect(() => {
@@ -41,9 +41,7 @@ const CourseAutocomplete = ({
 
   return (
     <div ref={containerRef} className="relative">
-      <label className="block mb-1 font-medium">
-        Course
-      </label>
+      <label className="block mb-1 font-medium">Course</label>
 
       <input
         type="text"
@@ -64,6 +62,7 @@ const CourseAutocomplete = ({
               key={course}
               type="button"
               onClick={() => {
+                onChange(course);
                 onSelect(course);
                 setShowSuggestions(false);
               }}
@@ -76,9 +75,7 @@ const CourseAutocomplete = ({
       )}
 
       {selectedValue && selectedValue !== value && (
-        <p className="text-xs text-gray-500 mt-1">
-          Selected: {selectedValue}
-        </p>
+        <p className="text-xs text-gray-500 mt-1">Selected: {selectedValue}</p>
       )}
     </div>
   );

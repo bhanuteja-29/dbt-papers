@@ -11,7 +11,7 @@ const CourseCodeAutocomplete = ({
   const containerRef = useRef(null);
 
   const filteredOptions = options.filter((courseCode) =>
-    courseCode.toLowerCase().includes(value.toLowerCase())
+    courseCode.toLowerCase().includes(value.toLowerCase()),
   );
 
   useEffect(() => {
@@ -41,9 +41,7 @@ const CourseCodeAutocomplete = ({
 
   return (
     <div ref={containerRef} className="relative">
-      <label className="block mb-1 font-medium">
-        Course Code
-      </label>
+      <label className="block mb-1 font-medium">Course Code</label>
 
       <input
         type="text"
@@ -57,30 +55,27 @@ const CourseCodeAutocomplete = ({
         className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10"
       />
 
-      {showSuggestions &&
-        value.trim() &&
-        filteredOptions.length > 0 && (
-          <div className="absolute z-10 w-full bg-white border rounded-lg mt-1 max-h-48 overflow-y-auto shadow">
-            {filteredOptions.map((courseCode) => (
-              <button
-                key={courseCode}
-                type="button"
-                onClick={() => {
-                  onSelect(courseCode);
-                  setShowSuggestions(false);
-                }}
-                className="block w-full text-left px-3 py-2 hover:bg-gray-100"
-              >
-                {courseCode}
-              </button>
-            ))}
-          </div>
-        )}
+      {showSuggestions && value.trim() && filteredOptions.length > 0 && (
+        <div className="absolute z-10 w-full bg-white border rounded-lg mt-1 max-h-48 overflow-y-auto shadow">
+          {filteredOptions.map((courseCode) => (
+            <button
+              key={courseCode}
+              type="button"
+              onClick={() => {
+                onChange(courseCode);
+                onSelect(courseCode);
+                setShowSuggestions(false);
+              }}
+              className="block w-full text-left px-3 py-2 hover:bg-gray-100"
+            >
+              {courseCode}
+            </button>
+          ))}
+        </div>
+      )}
 
       {selectedValue && selectedValue !== value && (
-        <p className="text-xs text-gray-500 mt-1">
-          Selected: {selectedValue}
-        </p>
+        <p className="text-xs text-gray-500 mt-1">Selected: {selectedValue}</p>
       )}
     </div>
   );
