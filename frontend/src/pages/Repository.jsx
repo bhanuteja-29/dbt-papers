@@ -18,7 +18,8 @@ const Repository = () => {
   // CONSTANTS
   // ==================================================
 
-  const limit = 10;
+  // Four complete rows on the desktop three-column grid.
+  const limit = 12;
 
   // ==================================================
   // SEARCH
