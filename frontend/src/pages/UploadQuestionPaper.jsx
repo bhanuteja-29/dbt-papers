@@ -71,12 +71,12 @@ const UploadQuestionPaper = () => {
     }
 
     const oversized = selectedFiles.find(
-      (file) => file.size > 1024 * 1024 * 2
+      (file) => file.size > 1024 * 1024 * 5
     );
 
     if (oversized) {
       setError(
-        `${oversized.name} exceeds the 2 MB file limit.`
+        `${oversized.name} exceeds the 5 MB file limit.`
       );
       return;
     }

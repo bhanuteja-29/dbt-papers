@@ -19,7 +19,7 @@ const FileUploadSection = ({
 
         <p className="mt-1 text-sm text-slate-500">
           Upload one PDF or up to 5 JPG/PNG images.
-          Maximum 2 MB per file.
+          Maximum 5 MB per file.
         </p>
       </div>
 
@@ -37,7 +37,7 @@ const FileUploadSection = ({
         </p>
 
         <p className="mt-2 text-xs text-slate-400">
-          Maximum 5 files • 2 MB each
+          Maximum 5 files • 5 MB each
         </p>
 
         <input
